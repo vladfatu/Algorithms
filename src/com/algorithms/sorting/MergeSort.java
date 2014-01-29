@@ -17,52 +17,48 @@ public class MergeSort implements Sort<Integer>{
 	@Override
 	public Integer[] sort(Integer[] unsortedList)
 	{
-		if (unsortedList.length > 2)
+		if (unsortedList.length <= 1)
+		{
+			return unsortedList;
+		}
+		else if (unsortedList.length == 2)
+		{
+			if (unsortedList[0] > unsortedList[1])
+			{
+				int x = unsortedList[0];
+				unsortedList[0] = unsortedList[1];
+				unsortedList[1] = x;
+			}
+			return unsortedList;
+		}
+		else
 		{
 			Integer[] leftList = Arrays.copyOfRange(unsortedList, 0, unsortedList.length/2);
 			Integer[] rightList = Arrays.copyOfRange(unsortedList, unsortedList.length/2, unsortedList.length);
 			
-			leftList = sort(leftList);
-			rightList = sort(rightList);
-			
-			return merge(leftList, rightList);
-		}
-		else
-		{
-			if (unsortedList.length == 2)
-			{
-				if (unsortedList[0] > unsortedList[1])
-				{
-					int x = unsortedList[0];
-					unsortedList[0] = unsortedList[1];
-					unsortedList[1] = x;
-				}
-				return unsortedList;
-			}
-			else
-			{
-				return unsortedList;
-			}
+			return merge(sort(leftList), sort(rightList));
 		}
 	}
 	
 	private Integer[] merge(Integer[] leftList, Integer[] rightList)
 	{
-		Integer[] newList = new Integer[leftList.length + rightList.length];
-		for (int i=0, l=0, r=0; i<newList.length; i++)
+		int i=0;
+		int j=0;
+		Integer[] mergedList = new Integer[leftList.length + rightList.length];
+		for (int k=0; k < leftList.length + rightList.length; k++)
 		{
-			if (l < leftList.length && (r >= rightList.length || leftList[l] < rightList[r]))
+			if (i < leftList.length && (j >= rightList.length || leftList[i] < rightList[j]))
 			{
-				newList[i] = leftList[l];
-				l++;
+				mergedList[k] = leftList[i];
+				i++;
 			}
 			else
-			{
-				newList[i] = rightList[r];
-				r++;
+			{	
+				mergedList[k] = rightList[j];
+				j++;
 			}
 		}
-		return newList;
+		return mergedList;
 	}
 
 }
