@@ -11,46 +11,46 @@ public class BFS{
 	{
 		GraphNode frankfurtNode = new GraphNode("Frankfurt");
 		GraphNode mannheimNode = new GraphNode("Mannheim");
-		GraphNode würzburgNode = new GraphNode("Würzburg");
+		GraphNode wurzburgNode = new GraphNode("Wurzburg");
 		GraphNode stuttgartNode = new GraphNode("Stuttgart");
 		GraphNode kasselNode = new GraphNode("Kassel");
 		GraphNode karlsruheNode = new GraphNode("Karlsruhe");
 		GraphNode erfurtNode = new GraphNode("Erfurt");
-		GraphNode nürnbergNode = new GraphNode("Nürnberg");
+		GraphNode nurnbergNode = new GraphNode("Nurnberg");
 		GraphNode augsburgNode = new GraphNode("Augsburg");
-		GraphNode münchenNode = new GraphNode("München");
+		GraphNode munchenNode = new GraphNode("Munchen");
 		
 		frankfurtNode.addAdiacentNode(mannheimNode);
-		frankfurtNode.addAdiacentNode(würzburgNode);
+		frankfurtNode.addAdiacentNode(wurzburgNode);
 		frankfurtNode.addAdiacentNode(kasselNode);
 		
 		mannheimNode.addAdiacentNode(frankfurtNode);
 		mannheimNode.addAdiacentNode(karlsruheNode);
 		
-		würzburgNode.addAdiacentNode(frankfurtNode);
-		würzburgNode.addAdiacentNode(nürnbergNode);
-		würzburgNode.addAdiacentNode(erfurtNode);
+		wurzburgNode.addAdiacentNode(frankfurtNode);
+		wurzburgNode.addAdiacentNode(nurnbergNode);
+		wurzburgNode.addAdiacentNode(erfurtNode);
 		
-		stuttgartNode.addAdiacentNode(nürnbergNode);
+		stuttgartNode.addAdiacentNode(nurnbergNode);
 		
 		kasselNode.addAdiacentNode(frankfurtNode);
-		kasselNode.addAdiacentNode(münchenNode);
+		kasselNode.addAdiacentNode(munchenNode);
 		
 		karlsruheNode.addAdiacentNode(mannheimNode);
 		karlsruheNode.addAdiacentNode(augsburgNode);
 		
-		erfurtNode.addAdiacentNode(würzburgNode);
+		erfurtNode.addAdiacentNode(wurzburgNode);
 		
-		nürnbergNode.addAdiacentNode(würzburgNode);
-		nürnbergNode.addAdiacentNode(stuttgartNode);
-		nürnbergNode.addAdiacentNode(münchenNode);
+		nurnbergNode.addAdiacentNode(wurzburgNode);
+		nurnbergNode.addAdiacentNode(stuttgartNode);
+		nurnbergNode.addAdiacentNode(munchenNode);
 		
 		augsburgNode.addAdiacentNode(karlsruheNode);
-		augsburgNode.addAdiacentNode(münchenNode);
+		augsburgNode.addAdiacentNode(munchenNode);
 		
-		münchenNode.addAdiacentNode(augsburgNode);
-		münchenNode.addAdiacentNode(nürnbergNode);
-		münchenNode.addAdiacentNode(kasselNode);
+		munchenNode.addAdiacentNode(augsburgNode);
+		munchenNode.addAdiacentNode(nurnbergNode);
+		munchenNode.addAdiacentNode(kasselNode);
 		
 		traverseTree(frankfurtNode);
 		
