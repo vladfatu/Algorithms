@@ -28,21 +28,17 @@ public class BSTValidator{
 				{
 					return true;
 				}
-				else if (node.right == null && node.value > node.left.value)
+				else if (node.right == null)
 				{
 					return isValid(node.left, min, node.value);
 				}
-				else if (node.left == null && node.value < node.right.value)
+				else if (node.left == null)
 				{
 					return isValid(node.right, node.value, max);
 				}
-				else if (node.value > node.left.value && node.value < node.right.value)
-				{
-					return isValid(node.left, min, node.value) && isValid(node.right, node.value, max);
-				}
 				else
 				{
-					return false;
+					return isValid(node.left, min, node.value) && isValid(node.right, node.value, max);
 				}
 			}
 			else
