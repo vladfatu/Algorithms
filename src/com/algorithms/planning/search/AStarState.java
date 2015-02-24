@@ -3,7 +3,6 @@ package com.algorithms.planning.search;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 
 /**
  * Created by vlad on 19.01.2015.
