@@ -14,43 +14,374 @@ import java.util.*;
  */
 class Escape {
 
-    public static void main(String args[])
-    {
+    public static void main(String args[]) {
+//        Scanner in = new Scanner(System.in);
+//        int w = in.nextInt(); // width of the board
+//        int h = in.nextInt(); // height of the board
+        int playerCount = 2;//in.nextInt(); // number of players (2 or 3)
+        int myId = 1;//in.nextInt(); // id of my player (0 = 1st player, 1 = 2nd player, ...)
 
-        long timestamp = System.currentTimeMillis();
+        System.err.println("my Id is: " + myId);
 
-        List<Wall> walls = new ArrayList<Wall>();
+        Dragon myDragon = new Dragon(myId, new Point(0, 0));
+        Dragon dragon1 = null;
+        Dragon dragon2 = null;
 
-        walls.add(new Wall(1, 1, Orientation.H));
-        walls.add(new Wall(3, 0, Orientation.V));
 
-        int[][] adiacent = calculateAdiacent(walls);
-
-        List<Point> destinations = new ArrayList<Point>();
-
+        List<Point> destinationsRight = new ArrayList<Point>();
         for (int i = 0 ; i < 9; i++)
         {
-            destinations.add(new Point(8, i));
+            destinationsRight.add(new Point(8, i));
         }
-
-        Point start = new Point(0, 0);
-
-        while (start.getColumn() < 8)
+        List<Point> destinationsLeft = new ArrayList<Point>();
+        for (int i = 0 ; i < 9; i++)
         {
-            long millis = System.currentTimeMillis() - timestamp;
-            Point nextPoint = getNextPoint(adiacent, start, destinations);
-            System.err.println(nextPoint.getColumn() + ", " + nextPoint.getRow());
-            System.err.println(getDirection(start, nextPoint) + " " + millis); // action: LEFT, RIGHT, UP, DOWN or "putX putY putOrientation" to place a wall
-            // System.out.println("3 2 V " + millis);
-            start = nextPoint;
+            destinationsLeft.add(new Point(0, i));
+        }
+        List<Point> destinationsDown = new ArrayList<Point>();
+        for (int i = 0 ; i < 9; i++)
+        {
+            destinationsDown.add(new Point(i, 8));
         }
 
-        Utils.printIntMatrix(adiacent);
+        if (myId == 0)
+        {
+            myDragon.setDestinations(destinationsRight);
+            dragon1 = new Dragon(1, new Point(0, 0));
+            dragon1.setDestinations(destinationsLeft);
+            if (playerCount > 2)
+            {
+                dragon2 = new Dragon(2, new Point(0, 0));
+                dragon2.setDestinations(destinationsDown);
+            }
+        }
+        else if (myId == 1)
+        {
+            myDragon.setDestinations(destinationsLeft);
+            dragon1 = new Dragon(0, new Point(0, 0));
+            dragon1.setDestinations(destinationsRight);
+            if (playerCount > 2)
+            {
+                dragon2 = new Dragon(2, new Point(0, 0));
+                dragon2.setDestinations(destinationsDown);
+            }
+        }
+        else
+        {
+            myDragon.setDestinations(destinationsDown);
+            dragon1 = new Dragon(0, new Point(0, 0));
+            dragon1.setDestinations(destinationsRight);
+            dragon2 = new Dragon(1, new Point(0, 0));
+            dragon2.setDestinations(destinationsLeft);
+        }
+
+        int round = 5;
+
+        // game loop
+//        while (true) {
+
+            List<Wall> walls = new ArrayList<Wall>();
+            Point start = null;
+
+//            for (int i = 0; i < playerCount; i++) {
+//                int x = in.nextInt(); // x-coordinate of the player
+//                int y = in.nextInt(); // y-coordinate of the player
+//                int wallsLeft = in.nextInt(); // number of walls available for the player
+//
+//                if (myDragon.getId() == i)
+//                {
+//                    myDragon.setPosition(new Point(x, y));
+//                }
+//                else if (dragon1.getId() == i)
+//                {
+//                    dragon1.setPosition(new Point(x, y));
+//                }
+//                else if (dragon2 != null && dragon2.getId() == i)
+//                {
+//                    dragon2.setPosition(new Point(x, y));
+//                }
+//
+//            }
+
+            walls.add(new Wall(2, 0, Orientation.V));
+            walls.add(new Wall(3, 1, Orientation.V));
+            walls.add(new Wall(1, 3, Orientation.H));
+
+            myDragon.setPosition(new Point(8, 3));
+            myDragon.setWallsLeft(10);
+            dragon1.setPosition(new Point(2, 1));
+            dragon1.setWallsLeft(10);
+
+//            int wallCount = in.nextInt(); // number of walls on the board
+//            for (int i = 0; i < wallCount; i++) {
+//                int wallX = in.nextInt(); // x-coordinate of the wall
+//                int wallY = in.nextInt(); // y-coordinate of the wall
+//                String wallOrientation = in.next(); // wall orientation ('H' or 'V')
+//                Wall wall = null;
+//                if (wallOrientation.equals("H"))
+//                {
+//                    wall = new Wall(wallX, wallY, Orientation.H);
+//                }
+//                else
+//                {
+//                    wall = new Wall(wallX, wallY, Orientation.V);
+//                }
+//                walls.add(wall);
+//            }
+
+            long timestamp = System.currentTimeMillis();
+
+            // Write an action using System.out.println()
+            // To debug: System.err.println("Debug messages...");
+
+            int[][] adiacent = calculateAdiacent(walls);
+
+            calculateNextPoint(adiacent, myDragon);
+
+            Dragon bestDragon = null;
+
+            if (dragon2 == null)
+            {
+                bestDragon = dragon1;
+                calculateNextPoint(adiacent, dragon1);
+            }
+            else
+            {
+                calculateNextPoint(adiacent, dragon1);
+                calculateNextPoint(adiacent, dragon2);
+                if (dragon1.getBestDistance() <= dragon2.getBestDistance())
+                {
+                    bestDragon = dragon1;
+                }
+                else
+                {
+                    bestDragon = dragon2;
+                }
+            }
+
+            System.err.println("my best distance: " + myDragon.getBestDistance());
+            System.err.println("best dragon best distance: " + bestDragon.getBestDistance());
+
+            if (myDragon.getBestDistance() <= bestDragon.getBestDistance() || myDragon.getWallsLeft() == 0 || round < 5)
+            {
+                long millis = System.currentTimeMillis() - timestamp;
+                System.out.println(getDirection(myDragon.getPosition(), myDragon.getBestNeighbour()) + " " + millis); // action: LEFT, RIGHT, UP, DOWN or "putX putY putOrientation" to place a wall
+            }
+            else
+            {
+                Wall wall = findBestWall(walls, myDragon, bestDragon);
+                if (wall != null)
+                {
+                    long millis = System.currentTimeMillis() - timestamp;
+                    System.out.println(wall.getColumn() + " " + wall.getRow() + " " + wall.getOrientation().toString() + " " + millis);
+                }
+                else
+                {
+                    long millis = System.currentTimeMillis() - timestamp;
+                    System.out.println(getDirection(myDragon.getPosition(), myDragon.getBestNeighbour()) + " " + millis); // action: LEFT, RIGHT, UP, DOWN or "putX putY putOrientation" to place a wall
+                }
+
+            }
+//        }
     }
 
-    private static Point getNextPoint(int[][] adiacent, Point start, List<Point> destinations)
+    private static boolean collision(Wall wallToCheck, List<Wall> walls)
     {
-        int startIndex = getAdiacentIndex(start);
+        for (Wall wall : walls)
+        {
+            if (collision(wall, wallToCheck))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean collision(Wall wall1, Wall wall2)
+    {
+        if (wall1.getOrientation() == Orientation.H)
+        {
+            if (wall2.getOrientation() == Orientation.H)
+            {
+                if (wall1.getRow() == wall2.getRow())
+                {
+                    if (Math.abs(wall1.getColumn() - wall2.getColumn()) <= 1)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (wall1.getColumn() == wall2.getColumn() - 1 && wall1.getRow() == wall2.getRow() + 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            if (wall2.getOrientation() == Orientation.V)
+            {
+                if (wall1.getColumn() == wall2.getColumn())
+                {
+                    if (Math.abs(wall1.getRow() - wall2.getRow()) <= 1)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (wall1.getColumn() == wall2.getColumn() + 1 && wall1.getRow() == wall2.getRow() - 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    private static Wall findBestWall(List<Wall> alreadyExistingWalls, Dragon myDragon, Dragon otherDragon)
+    {
+        Dragon myDragonCopy = new Dragon(myDragon.getId(), myDragon.getPosition());
+        myDragonCopy.setDestinations(myDragon.getDestinations());
+        Dragon otherDragonCopy = new Dragon(otherDragon.getId(), otherDragon.getPosition());
+        otherDragonCopy.setDestinations(otherDragon.getDestinations());
+
+        List<Wall> walls = new ArrayList<Wall>();
+        walls.addAll(alreadyExistingWalls);
+
+        Wall bestWall = null;
+
+        int bestDifference = -200;
+        int bestDifferenceForZero = -200;
+
+        //vertical
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 1;j < 9; j++)
+            {
+                Wall wall = new Wall(j, i, Orientation.V);
+                if (!collision(wall, walls))
+                {
+                    walls.add(wall);
+                    int[][] adiacent = calculateAdiacent(walls);
+
+                    calculateNextPoint(adiacent, myDragonCopy);
+                    calculateNextPoint(adiacent, otherDragonCopy);
+
+                    int otherDifference = otherDragonCopy.getBestDistance() - otherDragon.getBestDistance();
+                    int difference = (myDragon.getBestDistance() - myDragonCopy.getBestDistance()) + (otherDifference);
+
+                    if (myDragonCopy.getBestDistance() < 100 && otherDragonCopy.getBestDistance() < 100)
+                    {
+                        if (difference > bestDifference)
+                        {
+                            bestDifference = difference;
+                            bestWall = wall;
+                        }
+                        else if (difference == bestDifference)
+                        {
+                            if (difference == 0)
+                            {
+                                if (otherDifference > bestDifferenceForZero)
+                                {
+                                    bestDifferenceForZero = otherDifference;
+                                    bestDifference = difference;
+                                    bestWall = wall;
+                                }
+                            }
+                        }
+                    }
+
+                    walls.remove(wall);
+                }
+            }
+        }
+
+        //horizontal
+        for (int i = 1; i < 9; i++)
+        {
+            for (int j = 0;j < 8; j++)
+            {
+                Wall wall = new Wall(j, i, Orientation.H);
+                if (!collision(wall, walls))
+                {
+                    walls.add(wall);
+                    int[][] adiacent = calculateAdiacent(walls);
+
+                    calculateNextPoint(adiacent, myDragonCopy);
+                    calculateNextPoint(adiacent, otherDragonCopy);
+
+                    int otherDifference = otherDragonCopy.getBestDistance() - otherDragon.getBestDistance();
+                    int difference = (myDragon.getBestDistance() - myDragonCopy.getBestDistance()) + (otherDifference);
+
+                    if (myDragonCopy.getBestDistance() < 100 && otherDragonCopy.getBestDistance() < 100)
+                    {
+                        if (difference > bestDifference)
+                        {
+                            bestDifference = difference;
+                            bestWall = wall;
+                        }
+                        else if (difference == bestDifference)
+                        {
+                            if (difference == 0)
+                            {
+                                if (otherDifference > bestDifferenceForZero)
+                                {
+                                    bestDifferenceForZero = otherDifference;
+                                    bestDifference = difference;
+                                    bestWall = wall;
+                                }
+                            }
+                        }
+                    }
+
+                    walls.remove(wall);
+                }
+            }
+        }
+
+        System.err.println("best difference: " + bestDifference);
+        System.err.println("best difference for zero: " + bestDifferenceForZero);
+
+        if (bestDifference > 0)
+        {
+            return bestWall;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    private static void calculateNextPoint(int[][] adiacent, Dragon dragon)
+    {
+        int startIndex = getAdiacentIndex(dragon.getPosition());
         int min = 100;
         int minNeighbourIndex = -1;
         for (int i = 0; i < 81; i++)
@@ -58,7 +389,7 @@ class Escape {
             if (adiacent[startIndex][i] == 1)
             {
                 int minForNeighbour = 100;
-                for (Point destination : destinations)
+                for (Point destination : dragon.getDestinations())
                 {
                     int destinationIndex = getAdiacentIndex(destination);
                     if (minForNeighbour > adiacent[i][destinationIndex])
@@ -76,11 +407,14 @@ class Escape {
 
         if (minNeighbourIndex != -1)
         {
-            return getPointFromAdiacentIndex(minNeighbourIndex);
+            // System.err.println("Min distance: " + (min + 1));
+            dragon.setBestNeighbour(getPointFromAdiacentIndex(minNeighbourIndex));
+            dragon.setBestDistance(min + 1);
         }
         else
         {
-            return null;
+            dragon.setBestNeighbour(null);
+            dragon.setBestDistance(100);
         }
     }
 
@@ -315,5 +649,82 @@ class Wall
     public Orientation getOrientation()
     {
         return orientation;
+    }
+}
+
+class Dragon
+{
+    private int id;
+    private Point position;
+    private Point bestNeighbour;
+    private int bestDistance;
+    private int wallsLeft;
+
+    private List<Point> destinations;
+
+    public Dragon(int id, Point position)
+    {
+        this.id = id;
+        this.position = position;
+    }
+
+    public Point getPosition()
+    {
+        return position;
+    }
+
+    public void setPosition(Point position)
+    {
+        this.position = position;
+    }
+
+    public Point getBestNeighbour()
+    {
+        return bestNeighbour;
+    }
+
+    public void setBestNeighbour(Point bestNeighbour)
+    {
+        this.bestNeighbour = bestNeighbour;
+    }
+
+    public int getBestDistance()
+    {
+        return bestDistance;
+    }
+
+    public void setBestDistance(int bestDistance)
+    {
+        this.bestDistance = bestDistance;
+    }
+
+    public List<Point> getDestinations()
+    {
+        return destinations;
+    }
+
+    public void setDestinations(List<Point> destinations)
+    {
+        this.destinations = destinations;
+    }
+
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
+    }
+
+    public int getWallsLeft()
+    {
+        return wallsLeft;
+    }
+
+    public void setWallsLeft(int wallsLeft)
+    {
+        this.wallsLeft = wallsLeft;
     }
 }
