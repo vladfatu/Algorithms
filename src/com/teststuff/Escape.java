@@ -177,7 +177,7 @@ class Escape {
 
         if (myDragon.getBestDistance() > 2 && myDragon.getWallsLeft() > 0)
         {
-            if (state.getWorstDifference() + state.getBestDifference() >= -2)
+            if (state.getWorstDifference() + state.getBestDifference() >= -1 || playerCount > 2)
             {
                 if (state.getBestDifference() > 0 && state.getBestDifference() > pathDifference + 1)
                 {
@@ -186,7 +186,7 @@ class Escape {
             }
             else
             {
-                if (state.getWorstDifference() < 0 && -state.getWorstDifference() > pathDifference + 3)
+                if (state.getWorstDifference() < 0 && -state.getWorstDifference() > pathDifference + 2)
                 {
                     blockingWall = findBlockingWall(walls, state.getWorstWall(), state.getWorstDifference(), adiacent, myDragon, bestDragon, otherDragon);
                     if (blockingWall != null)
@@ -507,7 +507,7 @@ class Escape {
             }
         }
 
-        if (bestDifference > worstDifference + 2)
+        if (bestDifference > worstDifference + 1)
         {
             return bestWall;
         }
