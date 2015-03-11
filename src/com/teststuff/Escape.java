@@ -16,8 +16,8 @@ class Escape {
 //        Scanner in = new Scanner(System.in);
 //        int w = in.nextInt(); // width of the board
 //        int h = in.nextInt(); // height of the board
-        int playerCount = 2;//in.nextInt(); // number of players (2 or 3)
-        int myId = 1;//in.nextInt(); // id of my player (0 = 1st player, 1 = 2nd player, ...)
+        int playerCount = 3;//in.nextInt(); // number of players (2 or 3)
+        int myId = 0;//in.nextInt(); // id of my player (0 = 1st player, 1 = 2nd player, ...)
 
         System.err.println("my Id is: " + myId);
 
@@ -66,7 +66,7 @@ class Escape {
             dragon2.setDestination(destinationsLeftColumn, destinationsLeftRow);
         }
 
-        int round = 5;
+        int round = 7;
 
         // game loop
 //        while (true) {
@@ -94,18 +94,16 @@ class Escape {
 //
 //            }
 
-            walls.add(new Wall(2, 0, Orientation.V));
-            walls.add(new Wall(1, 2, Orientation.H));
-            walls.add(new Wall(1, 1, Orientation.V));
-            walls.add(new Wall(1, 3, Orientation.V));
+            walls.add(new Wall(8, 0, Orientation.V));
+            walls.add(new Wall(8, 2, Orientation.V));
 
-            myDragon.setPosition(new Point(1, 3));
+            myDragon.setPosition(new Point(7, 1));
             myDragon.setWallsLeft(10);
-            dragon1.setPosition(new Point(5, 2));
+            dragon1.setPosition(new Point(2, 5));
             dragon1.setWallsLeft(10);
 
-//            dragon2.setPosition(new Point(0, 0));
-//            dragon2.setWallsLeft(10);
+            dragon2.setPosition(new Point(0, 0));
+            dragon2.setWallsLeft(10);
 
 //            int wallCount = in.nextInt(); // number of walls on the board
 //            for (int i = 0; i < wallCount; i++) {
@@ -164,46 +162,55 @@ class Escape {
             System.err.println("my best distance: " + myDragon.getBestDistance());
             System.err.println("best dragon best distance: " + bestDragon.getBestDistance());
 
-            GameState state = getGameState(walls, adiacent, myDragon, bestDragon, otherDragon);
+            int levelsDeep = 2;
+            if (myDragon.getWallsLeft() < 2)
+            {
+                levelsDeep = 1;
+            }
+
+            GameState state = getGameState(walls, adiacent, myDragon, bestDragon, otherDragon, levelsDeep);
+
+            int bestDifferenceAverage = (int)(state.getBestDifference() / 2);
+            int worstDifference = (int) state.getWorstDifference();
 
             System.err.println("best Wall: " + state.getBestWall().getColumn() + ", " + state.getBestWall().getRow());
-            System.err.println("best difference: " + state.getBestDifference());
+            System.err.println("best difference average: " + bestDifferenceAverage);
             System.err.println("worst Wall: " + state.getWorstWall().getColumn() + ", " + state.getWorstWall().getRow());
-            System.err.println("worst difference: " + state.getWorstDifference());
+            System.err.println("worst difference: " + worstDifference);
 
             Wall blockingWall = null;
 
             int pathDifference = bestDragon.getBestDistance() - myDragon.getBestDistance();
 
-        if (myDragon.getBestDistance() > 2 && myDragon.getWallsLeft() > 0)
-        {
-            if (state.getWorstDifference() + state.getBestDifference() >= -1 || playerCount > 2)
+            if (myDragon.getBestDistance() > 2 && myDragon.getWallsLeft() > 0 && round > 5)
             {
-                if (state.getBestDifference() > 0 && state.getBestDifference() > pathDifference + 1)
+                if (worstDifference + bestDifferenceAverage >= -1)// || playerCount > 2)
                 {
-                    offensiveWall = true;
-                }
-            }
-            else
-            {
-                if (state.getWorstDifference() < 0 && -state.getWorstDifference() > pathDifference + 2)
-                {
-                    blockingWall = findBlockingWall(walls, state.getWorstWall(), state.getWorstDifference(), adiacent, myDragon, bestDragon, otherDragon);
-                    if (blockingWall != null)
+                    if (bestDifferenceAverage > 0 && bestDifferenceAverage > pathDifference + 1)
                     {
-                        defensiveWall = true;
+                        offensiveWall = true;
                     }
-                    else
+                }
+                else
+                {
+                    if (worstDifference < 0 && -worstDifference > pathDifference + 2)
                     {
-                        if (state.getBestDifference() > 0 && state.getBestDifference() > pathDifference + 1)
+                        blockingWall = findBlockingWall(walls, state.getWorstWall(), worstDifference, adiacent, myDragon, bestDragon, otherDragon);
+                        if (blockingWall != null)
                         {
-                            offensiveWall = true;
+                            defensiveWall = true;
+                        }
+                        else
+                        {
+                            if (bestDifferenceAverage > 0 && bestDifferenceAverage > pathDifference + 1)
+                            {
+                                offensiveWall = true;
+                            }
                         }
                     }
                 }
-            }
 
-        }
+            }
 
             if (offensiveWall)
             {
@@ -510,15 +517,15 @@ class Escape {
         if (bestDifference > worstDifference + 1)
         {
             return bestWall;
-        }
-        else
+        } else
         {
             return null;
         }
     }
 
-    private static GameState getGameState(List<Wall> alreadyExistingWalls, int[][] adiacent, Dragon myDragon, Dragon bestDragon, Dragon otherDragon)
+    private static GameState getGameState(List<Wall> alreadyExistingWalls, int[][] adiacent, Dragon myDragon, Dragon bestDragon, Dragon otherDragon, int levelsDeep)
     {
+        levelsDeep--;
         Dragon myDragonCopy = new Dragon(myDragon.getId(), myDragon.getPosition());
         myDragonCopy.setDestinationColumn(myDragon.getDestinationColumn());
         myDragonCopy.setDestinationRow(myDragon.getDestinationRow());
@@ -543,7 +550,7 @@ class Escape {
 
         double bestDifference = -200;
         double worstDifference = 200;
-        int bestDifferenceForZero = -200;
+        double bestDifferenceForCurrentLevel = -200;
 
         //vertical
         for (int i = 0; i < 8; i++)
@@ -568,26 +575,32 @@ class Escape {
                     {
                         differenceForOtherDragon = otherDragonCopy.getBestDistance() - otherDragon.getBestDistance();
                     }
-                    double difference = (myDragon.getBestDistance() - myDragonCopy.getBestDistance()) + (differenceForBestDragon) + (double)(differenceForOtherDragon) / 1000;
+                    double differenceForCurrentLevel = (myDragon.getBestDistance() - myDragonCopy.getBestDistance()) + (differenceForBestDragon) + (double)(differenceForOtherDragon) / 1000;
+
+                    double difference;
+
+                    if (levelsDeep > 0 && differenceForCurrentLevel > 0)
+                    {
+                        difference = differenceForCurrentLevel + getGameState(walls, adiacent, myDragonCopy, bestDragonCopy, otherDragonCopy, levelsDeep).getBestDifference();
+                    }
+                    else
+                    {
+                        difference = differenceForCurrentLevel;
+                    }
 
                     if (myDragonCopy.getBestDistance() < 100 && bestDragonCopy.getBestDistance() < 100 && (otherDragonCopy == null || otherDragonCopy.getBestDistance() < 100))
                     {
                         if (difference > bestDifference)
                         {
                             bestDifference = difference;
+                            bestDifferenceForCurrentLevel = differenceForCurrentLevel;
                             bestWall = wall;
                         }
-                        else if (difference == bestDifference)
+                        else if (difference == bestDifference && differenceForCurrentLevel > bestDifferenceForCurrentLevel)
                         {
-                            if (difference == 0)
-                            {
-                                if (differenceForBestDragon > bestDifferenceForZero)
-                                {
-                                    bestDifferenceForZero = differenceForBestDragon;
-                                    bestDifference = difference;
-                                    bestWall = wall;
-                                }
-                            }
+                            bestDifference = difference;
+                            bestDifferenceForCurrentLevel = differenceForCurrentLevel;
+                            bestWall = wall;
                         }
 
                         if (difference < worstDifference)
@@ -626,26 +639,32 @@ class Escape {
                     {
                         differenceForOtherDragon = otherDragonCopy.getBestDistance() - otherDragon.getBestDistance();
                     }
-                    double difference = (myDragon.getBestDistance() - myDragonCopy.getBestDistance()) + (differenceForBestDragon) + (double)(differenceForOtherDragon) / 1000;
+                    double differenceForCurrentLevel = (myDragon.getBestDistance() - myDragonCopy.getBestDistance()) + (differenceForBestDragon) + (double)(differenceForOtherDragon) / 1000;
+
+                    double difference;
+
+                    if (levelsDeep > 0 && differenceForCurrentLevel > 0)
+                    {
+                        difference = differenceForCurrentLevel + getGameState(walls, adiacent, myDragonCopy, bestDragonCopy, otherDragonCopy, levelsDeep).getBestDifference();
+                    }
+                    else
+                    {
+                        difference = differenceForCurrentLevel;
+                    }
 
                     if (myDragonCopy.getBestDistance() < 100 && bestDragonCopy.getBestDistance() < 100 && (otherDragonCopy == null || otherDragonCopy.getBestDistance() < 100))
                     {
                         if (difference > bestDifference)
                         {
                             bestDifference = difference;
+                            bestDifferenceForCurrentLevel = differenceForCurrentLevel;
                             bestWall = wall;
                         }
-                        else if (difference == bestDifference)
+                        else if (difference == bestDifference && differenceForCurrentLevel > bestDifferenceForCurrentLevel)
                         {
-                            if (difference == 0)
-                            {
-                                if (differenceForBestDragon > bestDifferenceForZero)
-                                {
-                                    bestDifferenceForZero = differenceForBestDragon;
-                                    bestDifference = difference;
-                                    bestWall = wall;
-                                }
-                            }
+                            bestDifference = difference;
+                            bestDifferenceForCurrentLevel = differenceForCurrentLevel;
+                            bestWall = wall;
                         }
 
                         if (difference < worstDifference)
@@ -661,15 +680,12 @@ class Escape {
             }
         }
 
-        System.err.println("best difference: " + bestDifference);
-        System.err.println("best difference for zero: " + bestDifferenceForZero);
-
         GameState state = new GameState();
 
         state.setBestWall(bestWall);
-        state.setBestDifference((int)bestDifference);
+        state.setBestDifference(bestDifference);
         state.setWorstWall(worstWall);
-        state.setWorstDifference((int)worstDifference);
+        state.setWorstDifference(worstDifference);
 
         return state;
     }
@@ -1007,6 +1023,55 @@ class AStarNode {
         checkIfValid();
     }
 
+    public int getValidNeighboursCount(int[][] adiacent)
+    {
+        int count = 0;
+
+        if (isValid)
+        {
+            int positionIndex = getAdiacentIndex(this.position);
+            Point point;
+            if (this.position.getRow() > 0)
+            {
+                point = new Point(this.position.getColumn(), this.position.getRow() - 1);
+                int pointIndex = getAdiacentIndex(point);
+                if (adiacent[positionIndex][pointIndex] == 0)
+                {
+                    count++;
+                }
+            }
+            if (this.position.getRow() + 1 < this.rowSize)
+            {
+                point = new Point(this.position.getColumn(), this.position.getRow() + 1);
+                int pointIndex = getAdiacentIndex(point);
+                if (adiacent[positionIndex][pointIndex] == 0)
+                {
+                    count++;
+                }
+            }
+            if (this.position.getColumn() > 0)
+            {
+                point = new Point(this.position.getColumn() - 1, this.position.getRow());
+                int pointIndex = getAdiacentIndex(point);
+                if (adiacent[positionIndex][pointIndex] == 0)
+                {
+                    count++;
+                }
+            }
+            if (this.position.getColumn() + 1 < this.columnSize)
+            {
+                point = new Point(this.position.getColumn() + 1, this.position.getRow());
+                int pointIndex = getAdiacentIndex(point);
+                if (adiacent[positionIndex][pointIndex] == 0)
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
     public List<AStarNode> getNotVisitedNeighbours(Map<Point, AStarNode> visitedMap, int[][] adiacent)
     {
         List<AStarNode> neighbours = new ArrayList<AStarNode>();
@@ -1119,7 +1184,7 @@ class AStarNode {
 
 abstract class AStar {
 
-    private static final int UNIT = 1;
+    protected static final int UNIT = 10;
 
     public List<Point> getShortestPath(int[][] adiacent, Point origin, int destinationColumn, int destinationRow) {
         int rowSize = 9;
@@ -1147,7 +1212,7 @@ abstract class AStar {
 
             for (AStarNode node : neighbours) {
                 boolean newNode = false;
-                int tentativeScore = currentNode.getScore() + UNIT;
+                int tentativeScore = currentNode.getScore() + UNIT + (4 - node.getValidNeighboursCount(adiacent));
 
                 AStarNode nodeToVisit = nodesToVisitMap.get(node.getPosition());
                 if (nodeToVisit == null) {
@@ -1210,11 +1275,11 @@ class AStarManhattan extends AStar {
     {
         if (destinationColumn == -1)
         {
-            return Math.abs(startPoint.getRow() - destinationRow);
+            return (Math.abs(startPoint.getRow() - destinationRow) * UNIT);
         }
         else
         {
-            return Math.abs(startPoint.getColumn() - destinationColumn);
+            return (Math.abs(startPoint.getColumn() - destinationColumn) * UNIT);
         }
     }
 }
@@ -1223,8 +1288,8 @@ class GameState
 {
     private Wall bestWall;
     private Wall worstWall;
-    private int bestDifference;
-    private int worstDifference;
+    private double bestDifference;
+    private double worstDifference;
 
     public Wall getBestWall() {
         return bestWall;
@@ -1242,19 +1307,19 @@ class GameState
         this.worstWall = worstWall;
     }
 
-    public int getBestDifference() {
+    public double getBestDifference() {
         return bestDifference;
     }
 
-    public void setBestDifference(int bestDifference) {
+    public void setBestDifference(double bestDifference) {
         this.bestDifference = bestDifference;
     }
 
-    public int getWorstDifference() {
+    public double getWorstDifference() {
         return worstDifference;
     }
 
-    public void setWorstDifference(int worstDifference) {
+    public void setWorstDifference(double worstDifference) {
         this.worstDifference = worstDifference;
     }
 }
