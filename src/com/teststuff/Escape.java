@@ -170,7 +170,7 @@ class Escape {
 
             GameState state = getGameState(walls, adiacent, myDragon, bestDragon, otherDragon, levelsDeep);
 
-            int bestDifferenceAverage = (int)(state.getBestDifference() / 2);
+            int bestDifferenceAverage = Math.max((int) (state.getBestDifference() / 2), (int) (state.getBestDifferenceForCurrentLevel()));
             int worstDifference = (int) state.getWorstDifference();
 
             System.err.println("best Wall: " + state.getBestWall().getColumn() + ", " + state.getBestWall().getRow());
@@ -181,19 +181,24 @@ class Escape {
             Wall blockingWall = null;
 
             int pathDifference = bestDragon.getBestDistance() - myDragon.getBestDistance();
+            int bestDragonDelta = 0;
+            // if (playerCount == 3)
+            // {
+            //     bestDragonDelta = 1;
+            // }
 
             if (myDragon.getBestDistance() > 2 && myDragon.getWallsLeft() > 0 && round > 5)
             {
                 if (worstDifference + bestDifferenceAverage >= -1)// || playerCount > 2)
                 {
-                    if (bestDifferenceAverage > 0 && bestDifferenceAverage > pathDifference + 1)
+                    if (bestDifferenceAverage > 0 && bestDifferenceAverage > pathDifference + bestDragonDelta)
                     {
                         offensiveWall = true;
                     }
                 }
                 else
                 {
-                    if (worstDifference < 0 && -worstDifference > pathDifference + 2)
+                    if (worstDifference < 0 && -worstDifference > pathDifference + bestDragonDelta + 1)
                     {
                         blockingWall = findBlockingWall(walls, state.getWorstWall(), worstDifference, adiacent, myDragon, bestDragon, otherDragon);
                         if (blockingWall != null)
@@ -684,6 +689,7 @@ class Escape {
 
         state.setBestWall(bestWall);
         state.setBestDifference(bestDifference);
+        state.setBestDifferenceForCurrentLevel(bestDifferenceForCurrentLevel);
         state.setWorstWall(worstWall);
         state.setWorstDifference(worstDifference);
 
@@ -1289,6 +1295,7 @@ class GameState
     private Wall bestWall;
     private Wall worstWall;
     private double bestDifference;
+    private double bestDifferenceForCurrentLevel;
     private double worstDifference;
 
     public Wall getBestWall() {
@@ -1321,5 +1328,13 @@ class GameState
 
     public void setWorstDifference(double worstDifference) {
         this.worstDifference = worstDifference;
+    }
+
+    public double getBestDifferenceForCurrentLevel() {
+        return bestDifferenceForCurrentLevel;
+    }
+
+    public void setBestDifferenceForCurrentLevel(double bestDifferenceForCurrentLevel) {
+        this.bestDifferenceForCurrentLevel = bestDifferenceForCurrentLevel;
     }
 }
