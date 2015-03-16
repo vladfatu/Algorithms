@@ -144,16 +144,18 @@ class Escape {
             {
                 calculateShortestPath(adiacent, dragon1);
                 calculateShortestPath(adiacent, dragon2);
-                if (dragon1.getBestDistance() <= dragon2.getBestDistance())
-                {
-                    bestDragon = dragon1;
-                    otherDragon = dragon2;
-                }
-                else
-                {
-                    bestDragon = dragon2;
-                    otherDragon = dragon1;
-                }
+//                if (dragon1.getBestDistance() <= dragon2.getBestDistance())
+//                {
+//                    bestDragon = dragon1;
+//                    otherDragon = dragon2;
+//                }
+//                else
+//                {
+//                    bestDragon = dragon2;
+//                    otherDragon = dragon1;
+//                }
+                bestDragon = dragon1;
+                otherDragon = dragon2;
             }
 
             boolean offensiveWall = false;
@@ -187,34 +189,33 @@ class Escape {
             //     bestDragonDelta = 1;
             // }
 
-            if (myDragon.getBestDistance() > 2 && myDragon.getWallsLeft() > 0 && round > 5)
+            if (playerCount == 2
+                    && ((myDragon.getId() == 0 && round == 3) || (myDragon.getId() == 1 && round == 2))
+                    && isJapaneseTactic(walls, myDragon, bestDragon))
             {
-                if (worstDifference + bestDifferenceAverage >= -1)// || playerCount > 2)
-                {
-                    if (bestDifferenceAverage > 0 && bestDifferenceAverage > pathDifference + bestDragonDelta)
+                offensiveWall = true;
+            }
+            else {
+                if (myDragon.getBestDistance() > 2 && myDragon.getWallsLeft() > 0 && round > 5) {
+                    if (worstDifference + bestDifferenceAverage >= -1)// || playerCount > 2)
                     {
-                        offensiveWall = true;
-                    }
-                }
-                else
-                {
-                    if (worstDifference < 0 && -worstDifference > pathDifference + bestDragonDelta + 1)
-                    {
-                        blockingWall = findBlockingWall(walls, state.getWorstWall(), worstDifference, adiacent, myDragon, bestDragon, otherDragon);
-                        if (blockingWall != null)
-                        {
-                            defensiveWall = true;
+                        if (bestDifferenceAverage > 0 && bestDifferenceAverage > pathDifference + bestDragonDelta) {
+                            offensiveWall = true;
                         }
-                        else
-                        {
-                            if (bestDifferenceAverage > 0 && bestDifferenceAverage > pathDifference + 1)
-                            {
-                                offensiveWall = true;
+                    } else {
+                        if (worstDifference < 0 && -worstDifference > pathDifference + bestDragonDelta + 1) {
+                            blockingWall = findBlockingWall(walls, state.getWorstWall(), worstDifference, adiacent, myDragon, bestDragon, otherDragon);
+                            if (blockingWall != null) {
+                                defensiveWall = true;
+                            } else {
+                                if (bestDifferenceAverage > 0 && bestDifferenceAverage > pathDifference + 1) {
+                                    offensiveWall = true;
+                                }
                             }
                         }
                     }
-                }
 
+                }
             }
 
             if (offensiveWall)
@@ -252,6 +253,20 @@ class Escape {
             dragon.setBestDistance(100);
         }
 //        System.out.println(shortestPath);
+    }
+
+    private static boolean isJapaneseTactic(List<Wall> walls, Dragon myDragon, Dragon otherDragon)
+    {
+        if (myDragon.getId() == 0 && myDragon.getPosition().getRow() == otherDragon.getPosition().getRow()
+                && (myDragon.getPosition().getRow() == 0 || myDragon.getPosition().getRow() == 8))
+        {
+            return false;
+        }
+        else if (walls.size() == 2 && walls.get(0).getOrientation() == Orientation.H && walls.get(1).getOrientation() == Orientation.H)
+        {
+            return true;
+        }
+        return false;
     }
 
     private static List<Wall> getCollisions(Wall wall)
@@ -555,6 +570,7 @@ class Escape {
 
         double bestDifference = -200;
         double worstDifference = 200;
+        int worstCount = 0;
         double bestDifferenceForCurrentLevel = -200;
 
         //vertical
@@ -610,8 +626,13 @@ class Escape {
 
                         if (difference < worstDifference)
                         {
+                            worstCount = 1;
                             worstDifference = difference;
                             worstWall = wall;
+                        }
+                        else if (difference == worstDifference)
+                        {
+                            worstCount++;
                         }
                     }
 
@@ -674,8 +695,13 @@ class Escape {
 
                         if (difference < worstDifference)
                         {
+                            worstCount = 1;
                             worstDifference = difference;
                             worstWall = wall;
+                        }
+                        else if (difference == worstDifference)
+                        {
+                            worstCount++;
                         }
                     }
 
@@ -691,7 +717,14 @@ class Escape {
         state.setBestDifference(bestDifference);
         state.setBestDifferenceForCurrentLevel(bestDifferenceForCurrentLevel);
         state.setWorstWall(worstWall);
-        state.setWorstDifference(worstDifference);
+        if (worstCount <= 1)
+        {
+            state.setWorstDifference(worstDifference);
+        }
+        else
+        {
+            state.setWorstDifference(0);
+        }
 
         return state;
     }
