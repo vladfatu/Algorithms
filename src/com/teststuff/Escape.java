@@ -94,12 +94,28 @@ class Escape {
 //
 //            }
 
-//            walls.add(new Wall(8, 0, Orientation.V));
-//            walls.add(new Wall(8, 2, Orientation.V));
+            walls.add(new Wall(3, 7, Orientation.V));
+            walls.add(new Wall(3, 7, Orientation.H));
+            walls.add(new Wall(8, 3, Orientation.V));
+            walls.add(new Wall(8, 5, Orientation.V));
+            walls.add(new Wall(5, 7, Orientation.H));
+            walls.add(new Wall(8, 7, Orientation.V));
+            walls.add(new Wall(7, 1, Orientation.V));
+            walls.add(new Wall(5, 1, Orientation.H));
+            walls.add(new Wall(5, 5, Orientation.V));
+            walls.add(new Wall(5, 3, Orientation.V));
+            walls.add(new Wall(6, 3, Orientation.H));
+            walls.add(new Wall(5, 4, Orientation.H));
+            walls.add(new Wall(6, 5, Orientation.H));
+            walls.add(new Wall(3, 1, Orientation.H));
+            walls.add(new Wall(3, 1, Orientation.V));
+            walls.add(new Wall(4, 2, Orientation.V));
+            walls.add(new Wall(2, 3, Orientation.H));
+            walls.add(new Wall(6, 1, Orientation.V));
 
-            myDragon.setPosition(new Point(0, 0));
-            myDragon.setWallsLeft(10);
-            dragon1.setPosition(new Point(0, 8));
+            myDragon.setPosition(new Point(3, 1));
+            myDragon.setWallsLeft(1);
+            dragon1.setPosition(new Point(6, 4));
             dragon1.setWallsLeft(10);
 
 //            dragon2.setPosition(new Point(0, 0));
@@ -261,11 +277,13 @@ class Escape {
 
         if (shortestPath != null && shortestPath.size() > 1) {
             dragon.setBestNeighbour(shortestPath.get(1));
+            dragon.setBestPath(shortestPath);
             dragon.setBestDistance(shortestPath.size());
         }
         else
         {
             dragon.setBestNeighbour(null);
+            dragon.setBestPath(null);
             dragon.setBestDistance(100);
         }
 //        System.out.println(shortestPath);
@@ -649,7 +667,7 @@ class Escape {
                     {
                         differenceForOtherDragon = otherDragonCopy.getBestDistance() - otherDragon.getBestDistance();
                     }
-                    double differenceForCurrentLevel = (myDragon.getBestDistance() - myDragonCopy.getBestDistance()) + (differenceForBestDragon) + (double)(differenceForOtherDragon) / 1000 + (double)(getProximity(wall, bestDragonCopy.getPosition()))/100000;
+                    double differenceForCurrentLevel = (myDragon.getBestDistance() - myDragonCopy.getBestDistance()) + (differenceForBestDragon) + (double)(differenceForOtherDragon) / 1000 + (double)(getProximity(wall, bestDragonCopy.getPosition(), bestDragonCopy.getBestPath()))/100000;
 
                     double difference;
 
@@ -718,7 +736,7 @@ class Escape {
                     {
                         differenceForOtherDragon = otherDragonCopy.getBestDistance() - otherDragon.getBestDistance();
                     }
-                    double differenceForCurrentLevel = (myDragon.getBestDistance() - myDragonCopy.getBestDistance()) + (differenceForBestDragon) + (double)(differenceForOtherDragon) / 1000 + (double)(getProximity(wall, bestDragonCopy.getPosition()))/100000;
+                    double differenceForCurrentLevel = (myDragon.getBestDistance() - myDragonCopy.getBestDistance()) + (differenceForBestDragon) + (double)(differenceForOtherDragon) / 1000 + (double)(getProximity(wall, bestDragonCopy.getPosition(), bestDragonCopy.getBestPath()))/100000;
 
                     double difference;
 
@@ -782,9 +800,27 @@ class Escape {
         return state;
     }
 
-    private static int getProximity(Wall wall, Point position)
+    private static int getProximity(Wall wall, Point position, List<Point> path)
     {
-        return 99 - (Math.abs(wall.getColumn() - position.getColumn()) + Math.abs(wall.getRow() - position.getRow()));
+        if (path != null) {
+            Point point1 = new Point(wall.getColumn(), wall.getRow() - 1);
+            Point point2 = new Point(wall.getColumn(), wall.getRow());
+            Point point3 = new Point(wall.getColumn() + 1, wall.getRow() - 1);
+            Point point4 = new Point(wall.getColumn() + 1, wall.getRow());
+            if (wall.getOrientation() == Orientation.V) {
+                point1 = new Point(wall.getColumn() - 1, wall.getRow());
+                point2 = new Point(wall.getColumn(), wall.getRow());
+                point3 = new Point(wall.getColumn() - 1, wall.getRow() + 1);
+                point4 = new Point(wall.getColumn(), wall.getRow() + 1);
+
+            }
+            for (int i = 0; i < path.size(); i++) {
+                if (path.get(i).equals(point1) || path.get(i).equals(point2) || path.get(i).equals(point3) || path.get(i).equals(point4)) {
+                    return 99 - i;
+                }
+            }
+        }
+        return 19 - (Math.abs(wall.getColumn() - position.getColumn()) + Math.abs(wall.getRow() - position.getRow()));
     }
 
     private static String getDirection(Point start, Point neighbour)
@@ -1020,6 +1056,7 @@ class Dragon
     private Point bestNeighbour;
     private int bestDistance;
     private int wallsLeft;
+    private List<Point> bestPath;
 
     private int destinationColumn;
     private int destinationRow;
@@ -1099,6 +1136,14 @@ class Dragon
     public void setWallsLeft(int wallsLeft)
     {
         this.wallsLeft = wallsLeft;
+    }
+
+    public List<Point> getBestPath() {
+        return bestPath;
+    }
+
+    public void setBestPath(List<Point> bestPath) {
+        this.bestPath = bestPath;
     }
 }
 
