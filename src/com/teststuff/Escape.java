@@ -196,9 +196,11 @@ class Escape {
                 worstDifference = 0;
             }
 
-            if (state.getBestWall() != null)
+            Wall bestWall = state.getBestWall();
+
+            if (bestWall != null)
             {
-                System.err.println("best Wall: " + state.getBestWall().getColumn() + ", " + state.getBestWall().getRow());
+                System.err.println("best Wall: " + bestWall.getColumn() + ", " + bestWall.getRow());
             }
             System.err.println("best difference average: " + bestDifferenceAverage);
             if (state.getWorstWall() != null)
@@ -221,6 +223,11 @@ class Escape {
                     && isJapaneseTactic(walls, myDragon, bestDragon))
             {
                 offensiveWall = true;
+//                Wall japaneseTacticsBestWall = getJapaneseTacticsBestWall(walls, myDragon, bestDragon);
+//                if (japaneseTacticsBestWall != null)
+//                {
+//                    bestWall = japaneseTacticsBestWall;
+//                }
             }
             else {
                 if (myDragon.getBestDistance() > 2 && myDragon.getWallsLeft() > 0 && round > 5) {
@@ -247,7 +254,7 @@ class Escape {
 
             if (offensiveWall)
             {
-                Wall wall = state.getBestWall();
+                Wall wall = bestWall;
                 long millis = System.currentTimeMillis() - timestamp;
                 System.out.println(wall.getColumn() + " " + wall.getRow() + " " + wall.getOrientation().toString() + " " + millis);
             }
@@ -302,6 +309,25 @@ class Escape {
         }
         return false;
     }
+
+//    private static Wall getJapaneseTacticsBestWall(List<Wall> walls, Dragon myDragon, Dragon otherDragon)
+//    {
+//        if (otherDragon.getPosition().getRow() < 2 || otherDragon.getPosition().getRow() > 6)
+//        {
+//            return null;
+//        }
+//        else
+//        {
+//            if (myDragon.getId() == 0)
+//            {
+//                return new Wall(4, walls.get(0).getRow() - 1, Orientation.V);
+//            }
+//            else
+//            {
+//                return new Wall(5, walls.get(0).getRow() - 1, Orientation.V);
+//            }
+//        }
+//    }
 
     private static List<Wall> getCollisions(Wall wall)
     {
@@ -788,14 +814,14 @@ class Escape {
         state.setBestDifference(bestDifference);
         state.setBestDifferenceForCurrentLevel(bestDifferenceForCurrentLevel);
         state.setWorstWall(worstWall);
-        if (worstCount <= 1)
-        {
-            state.setWorstDifference(worstDifference);
-        }
-        else
-        {
-            state.setWorstDifference(0);
-        }
+        // if (worstCount <= 1)
+        // {
+        state.setWorstDifference(worstDifference);
+        // }
+        // else
+        // {
+        //     state.setWorstDifference(0);
+        // }
 
         return state;
     }
